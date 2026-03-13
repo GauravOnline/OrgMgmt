@@ -13,6 +13,7 @@ namespace OrgMgmt
         public DbSet<Employee> Employees { get; set; }
         public DbSet<Service> Services { get; set; }
         public DbSet<Shift> Shifts { get; set; }
+        public DbSet<AttendanceRecord> AttendanceRecords { get; set; }
         
         // protected override void OnModelCreating(ModelBuilder modelBuilder)
         // {
@@ -32,10 +33,24 @@ namespace OrgMgmt
                 .WithOne(s => s.Employee)
                 .HasForeignKey(s => s.EmployeeId);
 
-            // Shift-Employee Many-to-Many
+            // Shift-Employee Many-to-Many with unique constraint
             modelBuilder.Entity<Shift>()
                 .HasMany(s => s.Employees)
-                .WithMany(e => e.Shifts);
+                .WithMany(e => e.Shifts)
+                .UsingEntity(j => j.HasIndex("EmployeesID", "ShiftsId").IsUnique());
+
+            // Employee → AttendanceRecord (one-to-many)
+            modelBuilder.Entity<AttendanceRecord>()
+                .HasOne(a => a.Employee)
+                .WithMany()
+                .HasForeignKey(a => a.EmployeeId);
+
+            // Shift → AttendanceRecord (one-to-many, required)
+            modelBuilder.Entity<AttendanceRecord>()
+                .HasOne(a => a.Shift)
+                .WithMany()
+                .HasForeignKey(a => a.ShiftId)
+                .IsRequired();
         }
     }
 }

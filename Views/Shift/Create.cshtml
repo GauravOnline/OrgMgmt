@@ -18,6 +18,11 @@
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
             <div class="form-group mb-3">
+                <label asp-for="Location" class="control-label"></label>
+                <input asp-for="Location" class="form-control" />
+                <span asp-validation-for="Location" class="text-danger"></span>
+            </div>
+            <div class="form-group mb-3">
                 <label asp-for="StartTime" class="control-label"></label>
                 <input asp-for="StartTime" type="time" class="form-control" />
                 <span asp-validation-for="StartTime" class="text-danger"></span>
@@ -31,6 +36,14 @@
                 <label asp-for="Frequency" class="control-label"></label>
                 <select asp-for="Frequency" class="form-control" asp-items="Html.GetEnumSelectList<OrgMgmt.Models.Frequency>()"></select>
                 <span asp-validation-for="Frequency" class="text-danger"></span>
+            </div>
+            <div class="form-group mb-3">
+                <label asp-for="Interval" class="control-label"></label>
+                <select asp-for="Interval" class="form-control">
+                    <option value="1">Weekly</option>
+                    <option value="2">Bi-weekly</option>
+                </select>
+                <span asp-validation-for="Interval" class="text-danger"></span>
             </div>
             <div class="form-group mb-4">
                 <label asp-for="DaysOfWeek" class="control-label">Days (e.g., Mon,Tue)</label>

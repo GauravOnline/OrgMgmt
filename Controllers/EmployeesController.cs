@@ -54,7 +54,7 @@ namespace OrgMgmt.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Salary,ID,Name,Address,DateOfBirth,Photo")] Employee employee, IFormFile? photoFile)
+        public async Task<IActionResult> Create([Bind("HourlyPayRate,Role,IsActive,ID,Name,Address,DateOfBirth,Photo")] Employee employee, IFormFile? photoFile)
         {
             if (ModelState.IsValid)
             {
@@ -97,7 +97,7 @@ namespace OrgMgmt.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("Salary,ID,Name,Address,DateOfBirth,Photo")] Employee employee)
+        public async Task<IActionResult> Edit(Guid id, [Bind("HourlyPayRate,Role,IsActive,ID,Name,Address,DateOfBirth,Photo")] Employee employee)
         {
             if (id != employee.ID)
             {

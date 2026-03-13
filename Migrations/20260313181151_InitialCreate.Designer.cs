@@ -11,7 +11,7 @@ using OrgMgmt;
 namespace OrgMgmt.Migrations
 {
     [DbContext(typeof(OrgDbContext))]
-    [Migration("20260126204326_InitialCreate")]
+    [Migration("20260313181151_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -40,14 +40,56 @@ namespace OrgMgmt.Migrations
                     b.Property<Guid>("EmployeesID")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("ShiftsId")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("ShiftsId")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("EmployeesID", "ShiftsId");
 
                     b.HasIndex("ShiftsId");
 
+                    b.HasIndex("EmployeesID", "ShiftsId")
+                        .IsUnique();
+
                     b.ToTable("EmployeeShift");
+                });
+
+            modelBuilder.Entity("OrgMgmt.Models.AttendanceRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("AdjustmentType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("ClockInTime")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("ClockOutTime")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("HoursToPay")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ShiftId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("TargetDate")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("ShiftId");
+
+                    b.ToTable("AttendanceRecords");
                 });
 
             modelBuilder.Entity("OrgMgmt.Models.Person", b =>
@@ -111,9 +153,9 @@ namespace OrgMgmt.Migrations
 
             modelBuilder.Entity("OrgMgmt.Models.Shift", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("DaysOfWeek")
                         .HasColumnType("TEXT");
@@ -123,6 +165,13 @@ namespace OrgMgmt.Migrations
 
                     b.Property<int>("Frequency")
                         .HasColumnType("INTEGER");
+
+                    b.Property<int>("Interval")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -150,7 +199,14 @@ namespace OrgMgmt.Migrations
                 {
                     b.HasBaseType("OrgMgmt.Models.Person");
 
-                    b.Property<decimal>("Salary")
+                    b.Property<decimal>("HourlyPayRate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasDiscriminator().HasValue("Employee");
@@ -184,6 +240,25 @@ namespace OrgMgmt.Migrations
                         .HasForeignKey("ShiftsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("OrgMgmt.Models.AttendanceRecord", b =>
+                {
+                    b.HasOne("OrgMgmt.Models.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OrgMgmt.Models.Shift", "Shift")
+                        .WithMany()
+                        .HasForeignKey("ShiftId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("Shift");
                 });
 
             modelBuilder.Entity("OrgMgmt.Models.Service", b =>

@@ -19,11 +19,23 @@
                     @Html.DisplayFor(model => model.Name)
                 </dd>
                 <dt class="col-sm-4">
-                    @Html.DisplayNameFor(model => model.Salary)
+                    @Html.DisplayNameFor(model => model.Role)
                 </dt>
                 <dd class="col-sm-8">
-                    @* Formats salary as currency *@
-                    @Model.Salary.ToString("C")
+                    @Html.DisplayFor(model => model.Role)
+                </dd>
+                <dt class="col-sm-4">
+                    @Html.DisplayNameFor(model => model.IsActive)
+                </dt>
+                <dd class="col-sm-8">
+                    @Html.DisplayFor(model => model.IsActive)
+                </dd>
+                <dt class="col-sm-4">
+                    @Html.DisplayNameFor(model => model.HourlyPayRate)
+                </dt>
+                <dd class="col-sm-8">
+                    @* Formats hourly pay rate as currency *@
+                    @Model.HourlyPayRate.ToString("C")
                 </dd>
                 <dt class="col-sm-4">
                     @Html.DisplayNameFor(model => model.Address)

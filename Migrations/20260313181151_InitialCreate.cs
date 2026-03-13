@@ -22,7 +22,9 @@ namespace OrgMgmt.Migrations
                     Photo = table.Column<byte[]>(type: "BLOB", nullable: true),
                     Discriminator = table.Column<string>(type: "TEXT", maxLength: 8, nullable: false),
                     Balance = table.Column<decimal>(type: "TEXT", nullable: true),
-                    Salary = table.Column<decimal>(type: "TEXT", nullable: true)
+                    Role = table.Column<string>(type: "TEXT", nullable: true),
+                    IsActive = table.Column<bool>(type: "INTEGER", nullable: true),
+                    HourlyPayRate = table.Column<decimal>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -33,12 +35,13 @@ namespace OrgMgmt.Migrations
                 name: "Shifts",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
+                    Location = table.Column<string>(type: "TEXT", nullable: false),
                     StartTime = table.Column<TimeSpan>(type: "TEXT", nullable: false),
                     EndTime = table.Column<TimeSpan>(type: "TEXT", nullable: false),
                     Frequency = table.Column<int>(type: "INTEGER", nullable: false),
+                    Interval = table.Column<int>(type: "INTEGER", nullable: false),
                     DaysOfWeek = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
@@ -67,11 +70,42 @@ namespace OrgMgmt.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AttendanceRecords",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    EmployeeId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    ShiftId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    TargetDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    ClockInTime = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    ClockOutTime = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    HoursToPay = table.Column<decimal>(type: "TEXT", nullable: false),
+                    AdjustmentType = table.Column<int>(type: "INTEGER", nullable: false),
+                    Notes = table.Column<string>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AttendanceRecords", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AttendanceRecords_People_EmployeeId",
+                        column: x => x.EmployeeId,
+                        principalTable: "People",
+                        principalColumn: "ID",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_AttendanceRecords_Shifts_ShiftId",
+                        column: x => x.ShiftId,
+                        principalTable: "Shifts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "EmployeeShift",
                 columns: table => new
                 {
                     EmployeesID = table.Column<Guid>(type: "TEXT", nullable: false),
-                    ShiftsId = table.Column<int>(type: "INTEGER", nullable: false)
+                    ShiftsId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -115,9 +149,25 @@ namespace OrgMgmt.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_AttendanceRecords_EmployeeId",
+                table: "AttendanceRecords",
+                column: "EmployeeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AttendanceRecords_ShiftId",
+                table: "AttendanceRecords",
+                column: "ShiftId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ClientService_ServicesId",
                 table: "ClientService",
                 column: "ServicesId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EmployeeShift_EmployeesID_ShiftsId",
+                table: "EmployeeShift",
+                columns: new[] { "EmployeesID", "ShiftsId" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_EmployeeShift_ShiftsId",
@@ -133,6 +183,9 @@ namespace OrgMgmt.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "AttendanceRecords");
+
             migrationBuilder.DropTable(
                 name: "ClientService");
 

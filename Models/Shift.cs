@@ -13,10 +13,12 @@ namespace OrgMgmt.Models
 
     public class Shift
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
 
         [Required]
         public string Name { get; set; } = string.Empty;
+
+        public string Location { get; set; } = string.Empty;
 
         [Required]
         [DataType(DataType.Time)]
@@ -28,6 +30,7 @@ namespace OrgMgmt.Models
         
         // Recurrence settings
         public Frequency Frequency { get; set; } = Frequency.Weekly;
+        public int Interval { get; set; } = 1;                 // 1=Weekly, 2=Bi-weekly
         
         // For Weekly: Comma separated days e.g. "Monday,Wednesday"
         public string? DaysOfWeek { get; set; } 

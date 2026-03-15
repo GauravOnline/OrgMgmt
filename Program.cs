@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using OrgMgmt;
+using OrgMgmt.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +11,8 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<OrgDbContext>(options => options.UseSqlite(
     builder.Configuration.GetConnectionString("DefaultConnection")
 ));
+
+builder.Services.AddScoped<ShiftValidationService>();
 
 var app = builder.Build();
 
@@ -29,6 +32,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(

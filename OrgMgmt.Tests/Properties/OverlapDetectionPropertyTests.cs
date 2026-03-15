@@ -445,3 +445,121 @@ public class VacationConflictBlocksAssignmentPropertyTests
     }
 }
 
+
+
+// Feature: bi-weekly-schedule-generation, Property 5: Duplicate assignment prevention
+
+/// <summary>
+/// Property tests verifying that assigning the same shift to the same employee twice
+/// results in only one EmployeeShift record due to the unique constraint.
+/// **Validates: Requirements 4.3**
+/// </summary>
+public class DuplicateAssignmentPreventionPropertyTests
+{
+    private static readonly string[] AllDays =
+        ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+    /// <summary>
+    /// For any employee and shift that are already linked, attempting to insert
+    /// a duplicate join table record SHALL be rejected by the unique constraint,
+    /// and the EmployeeShift table SHALL contain exactly one record for that pair.
+    /// </summary>
+    [Property(MaxTest = 100)]
+    public Property DuplicateAssignment_IsBlocked_And_SingleRecordExists()
+    {
+        var gen =
+            from nameLen in Gen.Choose(1, 10)
+            from nameChars in Gen.Elements('A', 'B', 'C', 'D', 'E').ListOf(nameLen)
+            from roleLen in Gen.Choose(1, 8)
+            from roleChars in Gen.Elements('X', 'Y', 'Z').ListOf(roleLen)
+            from payRate in Gen.Choose(1, 10000).Select(x => (decimal)x / 100m)
+            from startMin in Gen.Choose(0, 1380)
+            from duration in Gen.Choose(30, 1439 - startMin)
+            from dayFlags in Gen.Elements(true, false).ListOf(7)
+            let selectedDays = dayFlags.Zip(AllDays)
+                                       .Where(p => p.Item1)
+                                       .Select(p => p.Item2)
+                                       .ToList()
+            where selectedDays.Count > 0
+            select (
+                EmpName: new string(nameChars.ToArray()),
+                Role: new string(roleChars.ToArray()),
+                PayRate: payRate,
+                StartTime: TimeSpan.FromMinutes(startMin),
+                EndTime: TimeSpan.FromMinutes(startMin + duration),
+                Days: string.Join(",", selectedDays)
+            );
+
+        return Prop.ForAll(gen.ToArbitrary(), data =>
+        {
+            // Use SQLite in-memory so the unique index on EmployeeShift is enforced
+            using var connection = new Microsoft.Data.Sqlite.SqliteConnection("DataSource=:memory:");
+            connection.Open();
+            var options = new DbContextOptionsBuilder<OrgDbContext>()
+                .UseSqlite(connection)
+                .Options;
+
+            var employeeId = Guid.NewGuid();
+            var shiftId = Guid.NewGuid();
+
+            // First context: create employee, shift, and initial assignment
+            using (var context = new OrgDbContext(options))
+            {
+                context.Database.EnsureCreated();
+
+                var employee = new Employee
+                {
+                    ID = employeeId,
+                    Name = data.EmpName,
+                    Address = "TestCity",
+                    Role = data.Role,
+                    IsActive = true,
+                    HourlyPayRate = data.PayRate
+                };
+
+                var shift = new Shift
+                {
+                    Id = shiftId,
+                    Name = "TestShift",
+                    Location = "RoomA",
+                    StartTime = data.StartTime,
+                    EndTime = data.EndTime,
+                    DaysOfWeek = data.Days,
+                    Frequency = Frequency.Weekly,
+                    Interval = 1
+                };
+
+                employee.Shifts.Add(shift);
+                context.Employees.Add(employee);
+                context.Shifts.Add(shift);
+                context.SaveChanges();
+            }
+
+            // Second context: attempt duplicate join row via raw SQL to hit the unique constraint
+            bool duplicateRejected = false;
+            using (var context2 = new OrgDbContext(options))
+            {
+                try
+                {
+                    context2.Database.ExecuteSqlRaw(
+                        "INSERT INTO EmployeeShift (EmployeesID, ShiftsId) VALUES ({0}, {1})",
+                        employeeId, shiftId);
+                }
+                catch (Microsoft.Data.Sqlite.SqliteException)
+                {
+                    duplicateRejected = true;
+                }
+            }
+
+            // Third context: verify exactly one record exists
+            using var verifyContext = new OrgDbContext(options);
+            var assignedShifts = verifyContext.Employees
+                .Where(e => e.ID == employeeId)
+                .SelectMany(e => e.Shifts)
+                .Where(s => s.Id == shiftId)
+                .ToList();
+
+            return duplicateRejected && assignedShifts.Count == 1;
+        });
+    }
+}

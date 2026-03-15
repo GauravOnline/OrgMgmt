@@ -35,9 +35,15 @@
                     <li class="nav-item">
                         <a class="nav-link text-dark" asp-area="" asp-controller="Shift" asp-action="Index">Shifts</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Schedule" asp-action="Assign">Schedule</a>
-                    </li>
+                    @if (User.IsInRole("ScheduleManager") || User.IsInRole("Admin"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Schedule" asp-action="Assign">Schedule</a>
+                        </li>
+                    }
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    <partial name="_LoginPartial" />
                 </ul>
             </div>
         </div>

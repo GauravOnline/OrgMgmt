@@ -30,6 +30,8 @@
                 <dd class="col-sm-8">
                     @Html.DisplayFor(model => model.IsActive)
                 </dd>
+                @if (ViewBag.CanViewFinancialData == true)
+                {
                 <dt class="col-sm-4">
                     @Html.DisplayNameFor(model => model.HourlyPayRate)
                 </dt>
@@ -37,6 +39,7 @@
                     @* Formats hourly pay rate as currency *@
                     @Model.HourlyPayRate.ToString("C")
                 </dd>
+                }
                 <dt class="col-sm-4">
                     @Html.DisplayNameFor(model => model.Address)
                 </dt>

@@ -1,0 +1,63 @@
+@model IEnumerable<OrgMgmt.ViewModels.AdminUserViewModel>
+
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<h2>Admin Dashboard</h2>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @TempData["Error"]
+    </div>
+}
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Email</th>
+            <th>Current Roles</th>
+            <th>Assign Role</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.Email</td>
+                <td>
+                    @if (user.Roles.Any())
+                    {
+                        @foreach (var role in user.Roles)
+                        {
+                            <form asp-controller="Admin" asp-action="RemoveRole" method="post" class="d-inline">
+                                <input type="hidden" name="userId" value="@user.UserId" />
+                                <input type="hidden" name="role" value="@role" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger me-1 mb-1">
+                                    @role <span aria-hidden="true">&times;</span>
+                                </button>
+                            </form>
+                        }
+                    }
+                    else
+                    {
+                        <span class="text-muted">No roles</span>
+                    }
+                </td>
+                <td>
+                    <form asp-controller="Admin" asp-action="AssignRole" method="post" class="d-flex align-items-center gap-2">
+                        <input type="hidden" name="userId" value="@user.UserId" />
+                        <select name="role" class="form-select form-select-sm" style="width: auto;" aria-label="Select role to assign">
+                            @foreach (var role in user.AllRoles)
+                            {
+                                <option value="@role">@role</option>
+                            }
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-primary">Assign</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

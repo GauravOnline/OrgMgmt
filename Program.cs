@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using OrgMgmt;
+using OrgMgmt.Models;
 using OrgMgmt.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,14 +15,30 @@ builder.Services.AddDbContext<OrgDbContext>(options => options.UseSqlite(
 ));
 
 builder.Services.AddScoped<ShiftValidationService>();
+builder.Services.AddScoped<IFinancialDataAuthorizationService, FinancialDataAuthorizationService>();
 
-// Minimal cookie authentication so [Authorize] attributes don't crash.
-// Replace with full Identity setup when login/registration is implemented.
-builder.Services.AddAuthentication("Cookies")
-    .AddCookie("Cookies", options =>
-    {
-        options.LoginPath = "/Home/Index";
-    });
+// ASP.NET Core Identity registration
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+{
+    options.Password.RequiredLength = 6;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireLowercase = true;
+    options.Password.RequireDigit = true;
+    options.Password.RequireNonAlphanumeric = false;
+})
+.AddEntityFrameworkStores<OrgDbContext>()
+.AddDefaultTokenProviders();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    options.Cookie.SameSite = SameSiteMode.Strict;
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+    options.SlidingExpiration = true;
+    options.LoginPath = "/Account/Login";
+    options.AccessDeniedPath = "/Account/AccessDenied";
+});
 
 var app = builder.Build();
 
@@ -29,6 +47,7 @@ using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<OrgDbContext>();
     dbContext.Database.Migrate();
+    await RoleSeederService.SeedAsync(scope.ServiceProvider, builder.Configuration);
 }
 
 // Configure the HTTP request pipeline.

@@ -21,9 +21,12 @@
             <th>
                 @Html.DisplayNameFor(model => model.IsActive)
             </th>
+            @if (ViewBag.CanViewFinancialData == true)
+            {
             <th>
                 @Html.DisplayNameFor(model => model.HourlyPayRate)
             </th>
+            }
             <th>
                 @Html.DisplayNameFor(model => model.Address)
             </th>
@@ -48,9 +51,12 @@
             <td>
                 @Html.DisplayFor(modelItem => item.IsActive)
             </td>
+            @if (ViewBag.CanViewFinancialData == true)
+            {
             <td>
                 @Html.DisplayFor(modelItem => item.HourlyPayRate)
             </td>
+            }
             <td>
                 @Html.DisplayFor(modelItem => item.Address)
             </td>

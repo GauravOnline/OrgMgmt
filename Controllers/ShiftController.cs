@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OrgMgmt.Models;
 
 namespace OrgMgmt.Controllers
 {
+    [Authorize]
     public class ShiftController : Controller
     {
         private readonly OrgDbContext _context;

@@ -6,22 +6,28 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using OrgMgmt;
+using Microsoft.AspNetCore.Authorization;
 using OrgMgmt.Models;
+using OrgMgmt.Services;
 
 namespace OrgMgmt.Controllers
 {
+    [Authorize]
     public class EmployeesController : Controller
     {
         private readonly OrgDbContext _context;
+        private readonly IFinancialDataAuthorizationService _financialAuthService;
 
-        public EmployeesController(OrgDbContext context)
+        public EmployeesController(OrgDbContext context, IFinancialDataAuthorizationService financialAuthService)
         {
             _context = context;
+            _financialAuthService = financialAuthService;
         }
 
         // GET: Employees
         public async Task<IActionResult> Index()
         {
+            ViewBag.CanViewFinancialData = _financialAuthService.CanViewFinancialData(User);
             return View(await _context.Employees.ToListAsync());
         }
 
@@ -40,6 +46,7 @@ namespace OrgMgmt.Controllers
                 return NotFound();
             }
 
+            ViewBag.CanViewFinancialData = _financialAuthService.CanViewFinancialData(User);
             return View(employee);
         }
 
@@ -89,6 +96,7 @@ namespace OrgMgmt.Controllers
             {
                 return NotFound();
             }
+            ViewBag.CanViewFinancialData = _financialAuthService.CanViewFinancialData(User);
             return View(employee);
         }
 
@@ -142,6 +150,7 @@ namespace OrgMgmt.Controllers
                 return NotFound();
             }
 
+            ViewBag.CanViewFinancialData = _financialAuthService.CanViewFinancialData(User);
             return View(employee);
         }
 

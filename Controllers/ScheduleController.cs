@@ -7,7 +7,7 @@ using OrgMgmt.ViewModels;
 
 namespace OrgMgmt.Controllers
 {
-    [Authorize(Roles = "ScheduleManager")]
+    [Authorize(Roles = "ScheduleManager,Admin")]
     public class ScheduleController : Controller
     {
         private readonly OrgDbContext _context;

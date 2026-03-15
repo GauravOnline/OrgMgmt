@@ -1,9 +1,10 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using OrgMgmt.Models;
 
 namespace OrgMgmt
 {
-    public class OrgDbContext : DbContext
+    public class OrgDbContext : IdentityDbContext<ApplicationUser>
     {
         public OrgDbContext(DbContextOptions<OrgDbContext> options) : base(options) { }
         public OrgDbContext() { }
@@ -22,6 +23,8 @@ namespace OrgMgmt
         // }
         
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
+            base.OnModelCreating(modelBuilder);
+
             // Many-to-Many Relationship configuration
             modelBuilder.Entity<Client>()
                 .HasMany(c => c.Services)

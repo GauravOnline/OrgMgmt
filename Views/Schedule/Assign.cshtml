@@ -1,0 +1,44 @@
+@model OrgMgmt.ViewModels.EmployeeListViewModel
+
+@{
+    ViewData["Title"] = "Schedule Assignment";
+}
+
+<h2>Schedule Assignment</h2>
+<p>Select an employee to manage their shift assignments.</p>
+
+@if (Model.Employees.Count == 0)
+{
+    <div class="alert alert-info" role="alert">
+        <span>&#9432;</span> No active employees found.
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Role</th>
+                    <th scope="col"><span class="visually-hidden">Actions</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var emp in Model.Employees)
+                {
+                    <tr>
+                        <td>@emp.Name</td>
+                        <td>@emp.Role</td>
+                        <td>
+                            <a asp-action="AssignToEmployee" asp-route-id="@emp.Id"
+                               class="btn btn-primary btn-sm py-2 px-3">
+                                Manage Shifts
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

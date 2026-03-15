@@ -1,0 +1,43 @@
+@model List<OrgMgmt.ViewModels.ShiftAssignmentItem>
+
+@if (Model.Count == 0)
+{
+    <p class="text-muted fst-italic">No shifts currently assigned.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-sm align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col">Shift</th>
+                    <th scope="col">Location</th>
+                    <th scope="col">Time</th>
+                    <th scope="col">Days</th>
+                    <th scope="col">Frequency</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var shift in Model)
+                {
+                    <tr>
+                        <td>@shift.Name</td>
+                        <td>@shift.Location</td>
+                        <td>@shift.StartTime.ToString(@"hh\:mm") &ndash; @shift.EndTime.ToString(@"hh\:mm")</td>
+                        <td>@shift.DaysOfWeek</td>
+                        <td>
+                            @if (shift.Interval == 2)
+                            {
+                                <span title="Bi-weekly">&#9670; Bi-weekly</span>
+                            }
+                            else
+                            {
+                                <span title="Weekly">&#9679; Weekly</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

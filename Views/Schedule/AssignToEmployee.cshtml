@@ -1,0 +1,99 @@
+@model OrgMgmt.ViewModels.EmployeeScheduleViewModel
+
+@{
+    ViewData["Title"] = $"Manage Shifts - {Model.EmployeeName}";
+}
+
+<h2>@Model.EmployeeName</h2>
+<p class="text-muted">@Model.EmployeeRole</p>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger d-flex align-items-center" role="alert">
+        <span class="me-2" aria-hidden="true">&#9888;</span>
+        <div>@Model.ErrorMessage</div>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+{
+    <div class="alert alert-success d-flex align-items-center" role="alert">
+        <span class="me-2" aria-hidden="true">&#10003;</span>
+        <div>@Model.SuccessMessage</div>
+    </div>
+}
+
+<section aria-label="Current shift assignments" class="mb-4">
+    <h4>Current Assignments</h4>
+
+    @await Html.PartialAsync("_ShiftList", Model.CurrentShifts)
+
+    @if (Model.CurrentShifts.Count > 0)
+    {
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead class="visually-hidden">
+                    <tr>
+                        <th>Shift</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var shift in Model.CurrentShifts)
+                    {
+                        <tr>
+                            <td>@shift.Name</td>
+                            <td>
+                                <form asp-action="Remove" method="post"
+                                      onsubmit="return confirm('Remove @shift.Name from this employee?');">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="employeeId" value="@Model.EmployeeId" />
+                                    <input type="hidden" name="shiftId" value="@shift.ShiftId" />
+                                    <button type="submit" class="btn btn-outline-danger btn-sm py-2 px-3">
+                                        &#10005; Remove
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
+
+<section aria-label="Assign a new shift" class="mb-4">
+    <h4>Assign a Shift</h4>
+
+    @if (Model.AvailableShifts.Count == 0)
+    {
+        <p class="text-muted fst-italic">No additional shifts available to assign.</p>
+    }
+    else
+    {
+        <form asp-action="Assign" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="employeeId" value="@Model.EmployeeId" />
+
+            <div class="mb-3">
+                <label for="shiftId" class="form-label">Available Shifts</label>
+                <select name="shiftId" id="shiftId" class="form-select" required>
+                    <option value="">-- Select a shift --</option>
+                    @foreach (var s in Model.AvailableShifts)
+                    {
+                        var label = s.Interval == 2 ? "Bi-weekly" : "Weekly";
+                        <option value="@s.ShiftId">
+                            @s.Name — @s.Location | @s.StartTime.ToString(@"hh\:mm")–@s.EndTime.ToString(@"hh\:mm") | @s.DaysOfWeek | @label
+                        </option>
+                    }
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-success py-2 px-3">
+                &#10003; Assign Shift
+            </button>
+        </form>
+    }
+</section>
+
+<a asp-action="Assign" class="btn btn-secondary py-2 px-3">&#8592; Back to Employee List</a>

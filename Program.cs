@@ -14,6 +14,14 @@ builder.Services.AddDbContext<OrgDbContext>(options => options.UseSqlite(
 
 builder.Services.AddScoped<ShiftValidationService>();
 
+// Minimal cookie authentication so [Authorize] attributes don't crash.
+// Replace with full Identity setup when login/registration is implemented.
+builder.Services.AddAuthentication("Cookies")
+    .AddCookie("Cookies", options =>
+    {
+        options.LoginPath = "/Home/Index";
+    });
+
 var app = builder.Build();
 
 // Create the database if it does not already exist

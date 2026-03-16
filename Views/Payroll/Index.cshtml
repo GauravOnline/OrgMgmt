@@ -1,0 +1,88 @@
+@model OrgMgmt.ViewModels.PayrollReportViewModel
+@{ ViewData["Title"] = "Payroll Report"; }
+
+<h2>Payroll Report</h2>
+
+<form asp-action="Index" method="post" class="mb-4">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="row g-3 align-items-end">
+        <div class="col-auto">
+            <label asp-for="PeriodStartDate" class="form-label"></label>
+            <input asp-for="PeriodStartDate" type="date" class="form-control" />
+            <span asp-validation-for="PeriodStartDate" class="text-danger"></span>
+        </div>
+        <div class="col-auto">
+            <label asp-for="PeriodEndDate" class="form-label"></label>
+            <input asp-for="PeriodEndDate" type="date" class="form-control" />
+            <span asp-validation-for="PeriodEndDate" class="text-danger"></span>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Generate</button>
+        </div>
+        @if (Model.Rows.Any())
+        {
+            <div class="col-auto">
+                <a asp-action="ExportExcel"
+                   asp-route-periodStartDate="@Model.PeriodStartDate.ToString("yyyy-MM-dd")"
+                   asp-route-periodEndDate="@Model.PeriodEndDate.ToString("yyyy-MM-dd")"
+                   class="btn btn-secondary">Export Excel</a>
+            </div>
+            <div class="col-auto">
+                <a asp-action="ExportPdf"
+                   asp-route-periodStartDate="@Model.PeriodStartDate.ToString("yyyy-MM-dd")"
+                   asp-route-periodEndDate="@Model.PeriodEndDate.ToString("yyyy-MM-dd")"
+                   class="btn btn-secondary">Export PDF</a>
+            </div>
+        }
+    </div>
+</form>
+
+@if (Model.Rows.Any())
+{
+    <table class="table table-bordered table-striped table-sm">
+        <thead class="table-dark">
+            <tr>
+                <th>Employee</th>
+                <th>Role</th>
+                <th>Rate/hr</th>
+                <th>Regular</th>
+                <th>Sick</th>
+                <th>Vacation</th>
+                <th>Late</th>
+                <th>No-Shows</th>
+                <th>Total Hrs</th>
+                <th>Gross Pay</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var row in Model.Rows)
+        {
+            <tr>
+                <td>@row.EmployeeName</td>
+                <td>@row.Role</td>
+                <td>@row.HourlyPayRate.ToString("C")</td>
+                <td>@row.RegularHours.ToString("0.##")</td>
+                <td>@row.SickHours.ToString("0.##")</td>
+                <td>@row.VacationHours.ToString("0.##")</td>
+                <td>@row.LateHours.ToString("0.##")</td>
+                <td>
+                    @if (row.NoShowCount > 0)
+                    {
+                        <span class="text-danger fw-bold">@row.NoShowCount ($0.00)</span>
+                    }
+                    else
+                    {
+                        <span>0</span>
+                    }
+                </td>
+                <td>@row.TotalHoursToPay.ToString("0.##")</td>
+                <td class="fw-bold">@row.GrossPay.ToString("C")</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

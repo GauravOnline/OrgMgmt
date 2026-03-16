@@ -47,6 +47,13 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Attendance" asp-action="Dashboard">Attendance</a>
                         </li>
                     }
+                    @if (User.IsInRole("Admin") || User.IsInRole("Payroll"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Payroll" asp-action="Index">Payroll</a>
+                        </li>
+                    }
+
                 </ul>
                 <ul class="navbar-nav ms-auto">
                     <partial name="_LoginPartial" />

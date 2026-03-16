@@ -1,0 +1,46 @@
+@model List<OrgMgmt.ViewModels.AuditLogEntryViewModel>
+
+@{
+    ViewData["Title"] = "Audit History";
+}
+
+<h2>Audit History</h2>
+
+<a asp-action="Dashboard" class="btn btn-outline-secondary mb-3 py-2 px-3">&larr; Back to Dashboard</a>
+
+@if (Model.Count == 0)
+{
+    <div class="alert alert-info" role="alert">
+        <span aria-hidden="true">&#9432;</span> No audit history found for this record.
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle" aria-label="Audit history entries">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col">Timestamp</th>
+                    <th scope="col">User</th>
+                    <th scope="col">Previous Adjustment</th>
+                    <th scope="col">New Adjustment</th>
+                    <th scope="col">Previous Hours</th>
+                    <th scope="col">New Hours</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var entry in Model)
+                {
+                    <tr>
+                        <td>@entry.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                        <td>@entry.UserName</td>
+                        <td>@entry.PreviousAdjustmentType</td>
+                        <td>@entry.NewAdjustmentType</td>
+                        <td>@entry.PreviousHoursToPay.ToString("F2")</td>
+                        <td>@entry.NewHoursToPay.ToString("F2")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

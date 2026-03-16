@@ -1,0 +1,151 @@
+@model OrgMgmt.ViewModels.AttendanceDashboardViewModel
+
+@{
+    ViewData["Title"] = "Attendance Dashboard";
+}
+
+<h2>Attendance Dashboard</h2>
+
+<form method="get" asp-action="Dashboard" class="row g-3 align-items-end mb-4">
+    <div class="col-auto">
+        <label for="date" class="form-label">Select Date</label>
+        <input type="date" id="date" name="date" class="form-control"
+               value="@Model.SelectedDate.ToString("yyyy-MM-dd")" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary py-2 px-3">Filter</button>
+    </div>
+</form>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        <span aria-hidden="true">&#9888;</span> @Model.ErrorMessage
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+{
+    <div class="alert alert-success" role="alert">
+        <span aria-hidden="true">&#10003;</span> @Model.SuccessMessage
+    </div>
+}
+
+@if (Model.Rows.Count == 0)
+{
+    <div class="alert alert-info" role="alert">
+        <span aria-hidden="true">&#9432;</span> No scheduled employees for this date.
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle" aria-label="Attendance records for @Model.SelectedDate.ToString("MMMM d, yyyy")">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col">Employee</th>
+                    <th scope="col">Shift</th>
+                    <th scope="col">Start</th>
+                    <th scope="col">End</th>
+                    <th scope="col">Location</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Adjustment</th>
+                    <th scope="col">Clock-In Time</th>
+                    <th scope="col">Hours to Pay</th>
+                    <th scope="col"><span class="visually-hidden">Actions</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (var i = 0; i < Model.Rows.Count; i++)
+                {
+                    var row = Model.Rows[i];
+                    <tr>
+                        <td>@row.EmployeeName</td>
+                        <td>@row.ShiftName</td>
+                        <td>@row.ShiftStartTime.ToString(@"hh\:mm")</td>
+                        <td>@row.ShiftEndTime.ToString(@"hh\:mm")</td>
+                        <td>@row.ShiftLocation</td>
+                        <td>
+                            @switch (row.AdjustmentType)
+                            {
+                                case OrgMgmt.Models.AdjustmentType.None:
+                                    <span class="badge bg-secondary" aria-label="Status: None">&#9679; None</span>
+                                    break;
+                                case OrgMgmt.Models.AdjustmentType.Sick:
+                                    <span class="badge bg-warning text-dark" aria-label="Status: Sick Leave">&#9650; Sick</span>
+                                    break;
+                                case OrgMgmt.Models.AdjustmentType.Vacation:
+                                    <span class="badge bg-info text-dark" aria-label="Status: Vacation">&#9632; Vacation</span>
+                                    break;
+                                case OrgMgmt.Models.AdjustmentType.NoShow:
+                                    <span class="badge bg-danger" aria-label="Status: No-Show">&#10005; No-Show</span>
+                                    break;
+                                case OrgMgmt.Models.AdjustmentType.Late:
+                                    <span class="badge bg-warning text-dark" aria-label="Status: Late Arrival">&#9202; Late</span>
+                                    break;
+                            }
+                        </td>
+                        <td>
+                            <form method="post" action="@Url.Action("SaveAdjustment", "Attendance")" id="form-@row.AttendanceRecordId">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="AttendanceRecordId" value="@row.AttendanceRecordId" />
+                                <input type="hidden" name="SelectedDate" value="@Model.SelectedDate.ToString("yyyy-MM-dd")" />
+                                <label for="adj-@row.AttendanceRecordId" class="visually-hidden">Adjustment Type for @row.EmployeeName</label>
+                                <select name="AdjustmentType" id="adj-@row.AttendanceRecordId"
+                                        class="form-select adjustment-select" data-row-id="@row.AttendanceRecordId"
+                                        aria-label="Adjustment type for @row.EmployeeName">
+                                    <option value="None" selected="@(row.AdjustmentType == OrgMgmt.Models.AdjustmentType.None ? "selected" : null)">None</option>
+                                    <option value="Sick" selected="@(row.AdjustmentType == OrgMgmt.Models.AdjustmentType.Sick ? "selected" : null)">Sick Leave</option>
+                                    <option value="Vacation" selected="@(row.AdjustmentType == OrgMgmt.Models.AdjustmentType.Vacation ? "selected" : null)">Vacation</option>
+                                    <option value="NoShow" selected="@(row.AdjustmentType == OrgMgmt.Models.AdjustmentType.NoShow ? "selected" : null)">No-Show</option>
+                                    <option value="Late" selected="@(row.AdjustmentType == OrgMgmt.Models.AdjustmentType.Late ? "selected" : null)">Late Arrival</option>
+                                </select>
+                            </form>
+                        </td>
+                        <td>
+                            <div class="clock-in-wrapper" id="clock-in-@row.AttendanceRecordId"
+                                 style="display: @(row.AdjustmentType == OrgMgmt.Models.AdjustmentType.Late ? "block" : "none");">
+                                <label for="clockin-@row.AttendanceRecordId" class="visually-hidden">Clock-in time for @row.EmployeeName</label>
+                                <input type="time" name="ClockInTime" id="clockin-@row.AttendanceRecordId"
+                                       form="form-@row.AttendanceRecordId"
+                                       class="form-control"
+                                       value="@(row.ClockInTime?.ToString("HH:mm"))"
+                                       aria-label="Clock-in time for @row.EmployeeName" />
+                            </div>
+                        </td>
+                        <td>
+                            <strong>@row.HoursToPay.ToString("F2")</strong>
+                        </td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                <button type="submit" form="form-@row.AttendanceRecordId" class="btn btn-sm btn-primary py-2 px-3"
+                                        aria-label="Save adjustment for @row.EmployeeName">Save</button>
+                                <a asp-action="AuditHistory" asp-route-attendanceRecordId="@row.AttendanceRecordId"
+                                   class="btn btn-sm btn-outline-secondary py-2 px-3"
+                                   aria-label="View audit history for @row.EmployeeName">History</a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.adjustment-select').forEach(function (select) {
+                select.addEventListener('change', function () {
+                    var rowId = this.getAttribute('data-row-id');
+                    var wrapper = document.getElementById('clock-in-' + rowId);
+                    if (this.value === 'Late') {
+                        wrapper.style.display = 'block';
+                    } else {
+                        wrapper.style.display = 'none';
+                    }
+                });
+            });
+        });
+    </script>
+}

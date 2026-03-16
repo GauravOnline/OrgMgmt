@@ -15,6 +15,7 @@ namespace OrgMgmt
         public DbSet<Service> Services { get; set; }
         public DbSet<Shift> Shifts { get; set; }
         public DbSet<AttendanceRecord> AttendanceRecords { get; set; }
+        public DbSet<AuditLogEntry> AuditLogEntries { get; set; }
         
         // protected override void OnModelCreating(ModelBuilder modelBuilder)
         // {
@@ -54,6 +55,25 @@ namespace OrgMgmt
                 .WithMany()
                 .HasForeignKey(a => a.ShiftId)
                 .IsRequired();
+
+            // AuditLogEntry → AttendanceRecord (many-to-one)
+            modelBuilder.Entity<AuditLogEntry>()
+                .HasOne(a => a.AttendanceRecord)
+                .WithMany()
+                .HasForeignKey(a => a.AttendanceRecordId);
+
+            // Financial precision
+            modelBuilder.Entity<AttendanceRecord>()
+                .Property(a => a.HoursToPay)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<AuditLogEntry>()
+                .Property(a => a.PreviousHoursToPay)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<AuditLogEntry>()
+                .Property(a => a.NewHoursToPay)
+                .HasColumnType("decimal(18,2)");
         }
     }
 }

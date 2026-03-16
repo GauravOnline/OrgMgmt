@@ -48,6 +48,7 @@ using (var scope = app.Services.CreateScope())
     var dbContext = scope.ServiceProvider.GetRequiredService<OrgDbContext>();
     dbContext.Database.Migrate();
     await RoleSeederService.SeedAsync(scope.ServiceProvider, builder.Configuration);
+    await DataSeederService.SeedAsync(scope.ServiceProvider);
 }
 
 // Configure the HTTP request pipeline.

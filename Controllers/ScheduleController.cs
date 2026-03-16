@@ -92,6 +92,23 @@ namespace OrgMgmt.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Assign(Guid employeeId, Guid shiftId)
         {
+            var employee = await _context.Employees
+                .Include(e => e.Shifts)
+                .FirstOrDefaultAsync(e => e.ID == employeeId);
+
+            if (employee == null)
+                return NotFound();
+
+            if (!employee.IsActive)
+            {
+                TempData["Error"] = "Cannot assign shifts to an inactive employee.";
+                return RedirectToAction(nameof(Assign));
+            }
+
+            var shift = await _context.Shifts.FindAsync(shiftId);
+            if (shift == null)
+                return NotFound();
+
             // Validate overlap
             var overlapResult = await _validationService.ValidateOverlap(employeeId, shiftId, _context);
             if (!overlapResult.IsValid)
@@ -111,21 +128,14 @@ namespace OrgMgmt.Controllers
             // Attempt to save the assignment
             try
             {
-                var employee = await _context.Employees
-                    .Include(e => e.Shifts)
-                    .FirstOrDefaultAsync(e => e.ID == employeeId);
-
-                if (employee == null)
-                    return NotFound();
-
-                var shift = await _context.Shifts.FindAsync(shiftId);
-                if (shift == null)
-                    return NotFound();
-
                 employee.Shifts.Add(shift);
                 await _context.SaveChangesAsync();
 
                 TempData["Success"] = $"Successfully assigned '{shift.Name}' to {employee.Name}.";
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                TempData["Error"] = "The data was modified by another user. Please try again.";
             }
             catch (DbUpdateException)
             {
@@ -148,10 +158,21 @@ namespace OrgMgmt.Controllers
                 return NotFound();
 
             var shift = employee.Shifts.FirstOrDefault(s => s.Id == shiftId);
-            if (shift != null)
+            if (shift == null)
+                return NotFound();
+
+            try
             {
                 employee.Shifts.Remove(shift);
                 await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                TempData["Error"] = "The data was modified by another user. Please try again.";
+            }
+            catch (DbUpdateException)
+            {
+                TempData["Error"] = "An error occurred while removing the assignment. Please try again.";
             }
 
             return RedirectToAction(nameof(AssignToEmployee), new { id = employeeId });

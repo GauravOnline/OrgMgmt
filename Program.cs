@@ -15,6 +15,7 @@ builder.Services.AddDbContext<OrgDbContext>(options => options.UseSqlite(
 ));
 
 builder.Services.AddScoped<ShiftValidationService>();
+builder.Services.AddScoped<AttendanceService>();
 builder.Services.AddScoped<IFinancialDataAuthorizationService, FinancialDataAuthorizationService>();
 
 // ASP.NET Core Identity registration

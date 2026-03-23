@@ -4,6 +4,7 @@
 <h2>Payroll Report</h2>
 
 <form asp-action="Index" method="post" class="mb-4">
+    @Html.AntiForgeryToken()
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <div class="row g-3 align-items-end">
         <div class="col-auto">

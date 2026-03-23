@@ -87,6 +87,9 @@ namespace OrgMgmt.Services
             var today = DateTime.Today;
             var periodStart = today.AddDays(-13);
             var records = new List<AttendanceRecord>();
+            var aliceSickDate = FindNthWeekday(periodStart, 2);
+            var aliceLateDate = FindNthWeekday(periodStart, 7);
+            var bobNoShowDate = FindNthWeekday(periodStart, 4);
 
             // Alice (Morning Ward A, weekdays) - has Sick, Late, and normal days
             for (var d = periodStart; d <= today; d = d.AddDays(1))
@@ -98,14 +101,14 @@ namespace OrgMgmt.Services
                 DateTime? clockOut = d.Add(new TimeSpan(15, 0, 0));
 
                 // Sick day (Req: attendance 2.3 - full shift duration retained)
-                if (d == periodStart.AddDays(2))
+                if (d == aliceSickDate)
                 {
                     adj = AdjustmentType.Sick;
                     clockIn = null;
                     clockOut = null;
                 }
                 // Late arrival (Req: attendance 3.3 - HoursToPay = EndTime - ClockInTime)
-                if (d == periodStart.AddDays(7))
+                if (d == aliceLateDate)
                 {
                     adj = AdjustmentType.Late;
                     hours = 7.50m;
@@ -125,7 +128,7 @@ namespace OrgMgmt.Services
                 DateTime? clockOut = d.Add(new TimeSpan(23, 0, 0));
 
                 // No-show (Req: attendance 4.1 - HoursToPay = 0, clock times null)
-                if (d == periodStart.AddDays(4))
+                if (d == bobNoShowDate)
                 {
                     adj = AdjustmentType.NoShow;
                     hours = 0.00m;
@@ -226,6 +229,27 @@ namespace OrgMgmt.Services
                 return user;
             }
             return null;
+        }
+
+        private static DateTime FindNthWeekday(DateTime startDate, int weekdayIndex)
+        {
+            var currentDate = startDate.Date;
+            var seenWeekdays = 0;
+
+            while (true)
+            {
+                if (currentDate.DayOfWeek is not (DayOfWeek.Saturday or DayOfWeek.Sunday))
+                {
+                    if (seenWeekdays == weekdayIndex)
+                    {
+                        return currentDate;
+                    }
+
+                    seenWeekdays++;
+                }
+
+                currentDate = currentDate.AddDays(1);
+            }
         }
     }
 }

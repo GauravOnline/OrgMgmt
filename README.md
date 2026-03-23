@@ -1,6 +1,3 @@
-Here's a README.md for your project:
-
-```markdown
 # OrgMgmt - Organization Management System
 
 A web application built with ASP.NET Core MVC for managing employees, shifts, and scheduling.

@@ -1,0 +1,14 @@
+services:
+  orgmgmt:
+    build: .
+    container_name: orgmgmt
+    ports:
+      - "80:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: "Data Source=/data/app.db"
+      AdminSettings__Email: "admin@orgmgmt.local"
+      AdminSettings__Password: "Admin123!"
+    volumes:
+      - ./data:/data

@@ -1,0 +1,32 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches: [ develop ]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::655289749580:role/GitHubActionsOrgMgmtECRRole
+          aws-region: ca-central-1
+
+      - name: Deploy on EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /home/ec2-user/OrgMgmt
+            aws ecr get-login-password --region ca-central-1 | docker login --username AWS --password-stdin 655289749580.dkr.ecr.ca-central-1.amazonaws.com
+            docker compose pull
+            docker compose up -d

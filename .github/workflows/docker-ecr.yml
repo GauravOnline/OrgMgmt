@@ -2,7 +2,7 @@ name: Docker to ECR
 
 on:
   push:
-    branches: [ main, develop, cicd ]
+    branches: [ develop ]
 
 permissions:
   id-token: write

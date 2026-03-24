@@ -29,4 +29,4 @@ jobs:
             cd /home/ec2-user/OrgMgmt
             aws ecr get-login-password --region ca-central-1 | docker login --username AWS --password-stdin 655289749580.dkr.ecr.ca-central-1.amazonaws.com
             docker compose pull
-            docker compose up -d
+            docker compose up -d --force-recreate
